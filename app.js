@@ -8,14 +8,14 @@ await client.connect()
 
 const result = await client.query("SELECT * FROM usuario")
 console.log(result.rows)
-const usuario1 = result.rows[0].nombre
-console.log("usuario1:",usuario1)
+const usuario = result.rows[0].nombre
+console.log("usuario:",usuario)
 
 await client.end()
 
 const app = express()
 //const port = 3000;
-app.get('/',(req,res)=>res.send("Welcome " + usuario1 ))
+app.get('/',(req,res)=>res.send("Welcome " + usuario ))
 
 // export default app;
 // const PORT = process.env.PORT || 3000;
