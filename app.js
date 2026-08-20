@@ -8,7 +8,7 @@ await client.connect()
 
 const result = await client.query("SELECT * FROM usuario")
 console.log(result.rows)
-const usuario = result.rows[0].nombre
+const usuario = result.rows[0].Nombre
 console.log("usuario:",usuario)
 
 await client.end()
