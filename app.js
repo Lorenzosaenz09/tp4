@@ -1,10 +1,11 @@
 import pkg from 'pg'
 import dbconfig from './dbconfig.js'
 import express from 'express'
+import jwt from 'jsonwebtoken';
 
+const secretkey = process.env.JWT_SECRET;
 const {Client} = pkg;
 const client = new Client(dbconfig)
-await client.connect()
 
 app.post('/createuser', async (req, res) => {
   const user = req.body;
@@ -29,12 +30,12 @@ app.post('/createuser', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   const user = req.body;
-  if (!user.userid || !user.password) {
+  if (!user.name || !user.password) {
     return res.status(400).json({menssage: "Te faltan completar campos"});
   }
   try {
     await client.connect();
-    let result = await client.query("select * from usuario where userid=$1", [user.id]);
+    let result = await client.query("select * from usuario where nombre=$1", [user.name]);
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "el usuario buscado no existe"});
     }
@@ -42,7 +43,11 @@ app.post('/login', async (req, res) => {
     const passOK=await bcrypt.compare (user.password, dbUser.password);
     if (passOK)
     {
-      res.send({nombre: dbUser.nombre})
+      const payload = {
+        id: dbUser.id
+      };
+      const token = jwt.sign(payload, secretkey);
+      res.send({token: token})
     } else { res.send("clave invalida")}
 
    } catch (errror) {
@@ -54,7 +59,22 @@ app.post('/login', async (req, res) => {
     res.send(result.rows)
   })
 
-await client.end()
+app.get('/escucho', async (req, res) => {
+  const H = req.headers["authorization"];
+  token = H.split("")[i]
+  if (!token) {
+    return res.status(400).json({menssage: "Te falta enviar el token"});
+  }
+  try {
+    token = await jwt.verify(token, secretkey)
+  } catch (e){
+    console.log(e);
+  }
+  try {
+    await client.connect();
+    let result = await client.query("select * from canciones where id = $1", [token.id]);
+   }
+})
 
 const app = express()
 //const port = 3000;
