@@ -1,34 +1,46 @@
-import pkg from 'pg'
-import dbconfig from './dbconfig.js'
-import express from 'express'
+import pkg from 'pg';
+import dbconfig from './dbconfig.js';
+import express from 'express';
+import cors from 'cors';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const secretkey = process.env.JWT_SECRET;
-const {Client} = pkg;
-const client = new Client(dbconfig)
+const { Client } = pkg;
+const client = new Client(dbconfig);
 
-app.post('/createuser', async (req, res) => {
+const app = express();
+const router = express.Router();
+
+app.use(express.json());
+app.use(cors());
+
+router.post('/createuser', async (req, res) => {
   const user = req.body;
   if (!user.nombre || !user.userid || !user.password) {
-    return res.status(400).json({menssage: "Te faltan completar campos"});
+    return res.status(400).json({ menssage: 'Te faltan completar campos' });
   }
+
   try {
     await client.connect();
     const hashedPassword = await bcrypt.hash(user.password, 10);
     user.password = hashedPassword;
-    let result = await client.query("insert into usuario values ($1, $2, $3") returning *", [user.nombre, user.id, user.password]);
+
+    const result = await client.query(
+      'INSERT INTO usuario (nombre, userid, password) VALUES ($1, $2, $3) RETURNING *',
+      [user.nombre, user.userid, user.password]
+    );
+
     await client.end();
-    console.log("Perfil creado:" ,result.rowCount);
-    res.send(result.rows)
+    console.log('Perfil creado:', result.rowCount);
+    return res.send(result.rows);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
-  catch (error) {
-
-    return res.status(500).json({ message: error.message})
-  }
-})
+});
 
 
-app.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const user = req.body;
   if (!user.name || !user.password) {
     return res.status(400).json({menssage: "Te faltan completar campos"});
@@ -59,7 +71,7 @@ app.post('/login', async (req, res) => {
     res.send(result.rows)
   })
 
-app.get('/escucho', async (req, res) => {
+router.get('/escucho', verifyToken, async (req, res) => {
   const H = req.headers["authorization"];
   token = H.split("")[i]
   if (!token) {
@@ -72,11 +84,17 @@ app.get('/escucho', async (req, res) => {
   }
   try {
     await client.connect();
-    let result = await client.query("select * from canciones where id = $1", [token.id]);
-   }
+    let result = await client.query(`select c.nombre, e.reproducciones 
+                                    from cancion c join escucha e 
+                                    on c.id = e.cancion_id where e.usuario_id =$1`,[id]);
+    res.send(result.rows);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  } finally {
+    await client.end();
+  }
 })
 
-const app = express()
 //const port = 3000;
 app.get('/',(req,res)=>res.send("Welcome " + usuario ))
 
