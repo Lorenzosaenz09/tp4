@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import cancionesRouter from './routes/canciones.js';
 
 const secretkey = process.env.JWT_SECRET;
 const { Client } = pkg;
@@ -14,6 +15,8 @@ const router = express.Router();
 
 app.use(express.json());
 app.use(cors());
+
+app.use("/canciones", cancionesRouter);
 
 router.post('/createuser', async (req, res) => {
   const user = req.body;
