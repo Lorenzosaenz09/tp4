@@ -17,6 +17,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/canciones", cancionesRouter);
+app.use("/registro", registroRouter);
+app.use("/login", loginRouter);
 
 router.post('/createuser', async (req, res) => {
   const user = req.body;
