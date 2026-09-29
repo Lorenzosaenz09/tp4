@@ -24,3 +24,11 @@ export const verifyToken = async (req, res, next) => {
         res.status(401).send({error: 'Unauthorized'});
     }
 }
+
+export const verifyAdmin = (req, res, next) => {
+    if (req.rol !== 'A') {
+        return res.status(403).send({error: 'Forbidden: sólo un admin puede hacer esto'});
+    }
+
+    next();
+}
