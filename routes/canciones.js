@@ -1,9 +1,13 @@
 import Router from 'express';
-import escuchoController from '../controllers/escuchoController.js';
-import {verifyToken, verifyAdmin} from '../middlewares/autorizaciones.js';  
+
+import { verifyToken } from '../Middlewares/middleware.js';
+
+import { getEscucho, setEscucho } from '../controllers/escuchoController.js';
 
 const router = Router();
 
-router.post('/escucho', verifyToken, escuchoController.escucho);
+router.get('/escucho', verifyToken, getEscucho);
+
+router.post('/escucho/:id', verifyToken, setEscucho);
 
 export default router;

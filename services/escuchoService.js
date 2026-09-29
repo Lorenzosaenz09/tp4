@@ -20,3 +20,19 @@ export async function getEscuchoByUser(user_id) {
 
     return result;
 }
+export async function sumarEscucho(user_id, cancion_id) {
+    const client = new Client(dbconfig);
+
+    await client.connect();
+
+    const result = await client.query(
+        `INSERT INTO escucha (usuario_id, cancion_id, reproducciones)
+         VALUES ($1, $2, 1)
+         RETURNING *`,
+        [user_id, cancion_id]
+    );
+
+    await client.end();
+
+    return result;
+}
