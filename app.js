@@ -5,74 +5,19 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cancionesRouter from './routes/canciones.js';
+import LoginRouter from './routes/LoginRouter.js';
 
-const secretkey = process.env.JWT_SECRET;
-const { Client } = pkg;
-const client = new Client(dbconfig);
 
 const app = express();
-const router = express.Router();
+
 
 app.use(express.json());
 app.use(cors());
 
 app.use("/canciones", cancionesRouter);
+app.use("/registro", CreateRouter);
+app.use("/", LoginRouter);
 
-router.post('/createuser', async (req, res) => {
-  const user = req.body;
-  if (!user.nombre || !user.userid || !user.password) {
-    return res.status(400).json({ menssage: 'Te faltan completar campos' });
-  }
-
-  try {
-    await client.connect();
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    user.password = hashedPassword;
-
-    const result = await client.query(
-      'INSERT INTO usuario (nombre, userid, password) VALUES ($1, $2, $3) RETURNING *',
-      [user.nombre, user.userid, user.password]
-    );
-
-    await client.end();
-    console.log('Perfil creado:', result.rowCount);
-    return res.send(result.rows);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-});
-
-
-router.post('/login', async (req, res) => {
-  const user = req.body;
-  if (!user.name || !user.password) {
-    return res.status(400).json({menssage: "Te faltan completar campos"});
-  }
-  try {
-    await client.connect();
-    let result = await client.query("select * from usuario where nombre=$1", [user.name]);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "el usuario buscado no existe"});
-    }
-    let dbUser = result.rows[0];
-    const passOK=await bcrypt.compare (user.password, dbUser.password);
-    if (passOK)
-    {
-      const payload = {
-        id: dbUser.id
-      };
-      const token = jwt.sign(payload, secretkey);
-      res.send({token: token})
-    } else { res.send("clave invalida")}
-
-   } catch (errror) {
-    
-   return res.status(500).json({ message: error.message});
-   }
-    await client.end();
-    console.log("Perfil creado:" ,result.rowCount);
-    res.send(result.rows)
-  })
 
 router.get('/escucho', verifyToken, async (req, res) => {
   const H = req.headers["authorization"];
