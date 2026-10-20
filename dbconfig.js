@@ -1,14 +1,10 @@
-import 'dotenv/config'; // Carga automática en una sola línea
+import "dotenv/config";
 
-const puerto = process.env.PUERTO;
-const dbconfig = {
+export const config = {
     host: process.env.PGHOST,
     database: process.env.PGDATABASE,
-    user:process.env.PGUSER,
-    password:process.env.PGPASSWORD,
-    port:5432,
-    ssl:true
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    port: 5432,
+    ssl: true
 }
-
-export default dbconfig; 
- 
