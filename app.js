@@ -17,6 +17,7 @@ app.use(cors());
 app.use("/canciones", cancionesRouter);
 app.use("/registro", CreateRouter);
 app.use("/", LoginRouter);
+app.use("/escucho", EscuchoRouter);
 
 
 router.get('/escucho', verifyToken, async (req, res) => {

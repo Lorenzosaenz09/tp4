@@ -11,8 +11,8 @@ export async function getEscuchoByUser(user_id) {
     const result = await client.query(
         `SELECT c.nombre, e.reproducciones
          FROM cancion c
-         JOIN escucha e ON c.id = e.cancion_id
-         WHERE e.usuario_id = $1`,
+         JOIN escucha e ON c.id = e.cancionid
+         WHERE e.usuarioid = $1`,
         [user_id]
     );
 

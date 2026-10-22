@@ -1,27 +1,24 @@
-const Createuser = async (req, res) => {
-  const user = req.body;
-  if (!user.nombre || !user.userid || !user.password) {
-    return res.status(400).json({ menssage: 'Te faltan completar campos' });
-  }
-
-  try {
-    await client.connect();
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    user.password = hashedPassword;
-
-    const result = //await Createuser.service.createuser
-    await client.query(
-      'INSERT INTO usuario (nombre, userid, password) VALUES ($1, $2, $3) RETURNING *',
-      [user.nombre, user.userid, user.password]
-    );
-
-    await client.end();
-    console.log('Perfil creado:', result.rowCount);
-    return res.send(result.rows);
-
-} 
   
-  catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
+  import { insertUsuario,getUsuarioByUsername } from '../Services/authService.js';
+  import bcrypt from 'bcrypt';
+  import jwt from 'jsonwebtoken';
+
+  const secret = process.env.JWT_SECRET;
+  export async function  CreateUser (req, res) {
+      const user = req.body;
+      if(!user.username || !user.nombre || !user.password  )
+        return res.status(400).json({message:"Debes completar todos los campos"})
+
+      const hashedPwd = await bcrypt.hash(user.password,10);
+
+      try {
+        const result = await insertUsuario(user.username, user.nombre, hashedPwd)
+        console.log("result.rows", result.rows)
+          res.status(201).json({message:"Usuario creado!, id:" + result.rows[0].id})
+
+      }
+      catch (err) {
+        console.log("Error:", err)
+        return res.status(500).json({message: err.message})
+      }
 }
